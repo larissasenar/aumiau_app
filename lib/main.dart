@@ -1,4 +1,5 @@
 import 'package:aumiau_app/core/theme.dart';
+import 'package:aumiau_app/pages/home/home_page.dart';
 import 'package:aumiau_app/pages/sign_in/sign_in_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -7,9 +8,13 @@ import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  ); // Inicializa o Firebase
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    ); // Inicializa o Firebase
+  } catch (e) {
+    print("Erro ao inicializar o Firebase: $e");
+  }
 
   runApp(const MyApp());
 }
@@ -20,12 +25,15 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return OKToast(
-      child: MaterialApp(
-        title: 'Aumiau App',
-        debugShowCheckedModeBanner: false,
-        theme: theme,
-        home: SignInPage(),
-      ),
-    );
+        child: MaterialApp(
+      title: 'Aumiau App',
+      debugShowCheckedModeBanner: false,
+      theme: theme,
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const SignInPage(),
+        '/home': (context) => const HomePage(),
+      },
+    ));
   }
 }

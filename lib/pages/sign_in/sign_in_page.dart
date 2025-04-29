@@ -1,7 +1,7 @@
 import 'package:aumiau_app/pages/sign_in/sign_in_controller.dart';
 import 'package:aumiau_app/pages/sing_up/sign_up_page.dart';
+import 'package:aumiau_app/widgets/app_loading.dart';
 import 'package:aumiau_app/widgets/app_logo.dart';
-import 'package:aumiau_app/widgets/toasts/toast_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:aumiau_app/core/exceptions/auth_exceptions.dart';
 
@@ -22,76 +22,108 @@ class _SignInPageState extends State<SignInPage> {
       body: Form(
         key: _formKey,
         child: Container(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const AppLogo(),
-              const SizedBox(height: 16),
-              TextFormField(
-                decoration: const InputDecoration(
-                  labelText: 'Email',
-                  prefixIcon: Icon(
-                    Icons.email,
-                    size: 24,
-                  ),
-                ),
-                validator: (email) =>
-                    email == null || email.isEmpty ? 'Campo obrigatório' : null,
-                onSaved: (email) => _controller.setEmail(email!),
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                decoration: const InputDecoration(
-                  labelText: 'Senha',
-                  prefixIcon: Icon(
-                    Icons.lock,
-                    size: 24,
-                  ),
-                ),
-                obscureText: true,
-                validator: (senha) =>
-                    senha == null || senha.isEmpty ? 'Campo obrigatório' : null,
-                onSaved: (senha) => _controller.setSenha(senha!),
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: 120,
-                child: OutlinedButton(
-                  onPressed: () async {
-                    final form = _formKey.currentState;
-                    if (form != null && form.validate()) {
-                      form.save();
-                      try {
-                        final user = await _controller.fazLogin();
-                        print(user.email);
-                        // navegar para a próxima tela
-                        Navigator.of(context).pushNamed('/home');
-                      } on AuthException catch (e) {
-                        print('Erro ao fazer login: ${e.message}');
-                        Toasts.showErrorToast(e.message);
-                      }
-                    }
-                  },
-                  child: const Text('Entrar'),
-                ),
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: 120,
-                child: OutlinedButton(
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const SignUpPage(),
+          child: _controller.isLoading
+              ? Center(
+                  child: AppLoading(),
+                )
+              : Padding(
+                  padding: const EdgeInsets.all(32),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const AppLogo(),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        decoration: const InputDecoration(
+                          labelText: 'Email',
+                          prefixIcon: Icon(
+                            Icons.email,
+                            size: 24,
+                          ),
+                        ),
+                        validator: (email) => email == null || email.isEmpty
+                            ? 'Campo obrigatório'
+                            : null,
+                        onSaved: (email) => _controller.setEmail(email!),
                       ),
-                    );
-                  },
-                  child: const Text('Cadastrar'),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        decoration: const InputDecoration(
+                          labelText: 'Senha',
+                          prefixIcon: Icon(
+                            Icons.lock,
+                            size: 24,
+                          ),
+                        ),
+                        obscureText: true,
+                        validator: (senha) => senha == null || senha.isEmpty
+                            ? 'Campo obrigatório'
+                            : null,
+                        onSaved: (senha) => _controller.setSenha(senha!),
+                      ),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: 120,
+                        child: OutlinedButton(
+                          onPressed: () async {
+                            final form = _formKey.currentState;
+                            if (form != null && form.validate()) {
+                              form.save();
+                              setState(() => _controller.setIsLoading(true));
+
+                              try {
+                                final user = await _controller.fazLogin();
+                                print("Login realizado com sucesso.");
+                                print("ID do usuário: ${user.id}");
+                                print("Nome do usuário: ${user.nome}");
+                                Navigator.of(context)
+                                    .pushReplacementNamed('/home');
+                              } on AcessoNegadoException catch (e) {
+                                // Exibindo a mensagem de erro específica para Acesso Negado
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text(e.message)),
+                                );
+                              } on AuthException catch (e) {
+                                // Exibindo a mensagem de erro para outras exceções
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text(e.message)),
+                                );
+                              } catch (e) {
+                                // Tratamento de erro genérico
+                                print('Erro inesperado: $e');
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content: Text('Erro inesperado')),
+                                );
+                              } finally {
+                                setState(() => _controller.setIsLoading(false));
+                              }
+                            }
+                          },
+                          child: _controller.isLoading
+                              ? const CircularProgressIndicator()
+                              : const Text('Entrar'),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: 120,
+                        child: OutlinedButton(
+                          onPressed: _controller.isLoading
+                              ? null
+                              : () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (_) => const SignUpPage(),
+                                    ),
+                                  );
+                                },
+                          child: const Text('Cadastrar'),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
         ),
       ),
     );
