@@ -34,7 +34,7 @@ class SignUpController {
         email: _email!,
         password: _senha!,
       );
-
+      //cria o documento do usuario
       await _userRef.doc(userCredential.user!.uid).set({
         'nome': _nome,
         'email': _email,
@@ -55,4 +55,6 @@ class SignUpController {
   void setSenhaConfirmada(String senhaConfirmada) =>
       _senhaConfirmada = senhaConfirmada;
   void setIsLoading(bool isLoading) => _isLoading = isLoading;
+
+  bool get isLoading => _isLoading;
 }
