@@ -2,6 +2,7 @@ import 'package:aumiau_app/core/theme.dart';
 import 'package:aumiau_app/pages/sign_in_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:oktoast/oktoast.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -18,11 +19,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Aumiau App',
-      debugShowCheckedModeBanner: false,
-      theme: theme,
-      home: SignInPage(),
+    return OKToast(
+      child: MaterialApp(
+        title: 'Aumiau App',
+        debugShowCheckedModeBanner: false,
+        theme: theme,
+        home: SignInPage(),
+      ),
     );
   }
 }

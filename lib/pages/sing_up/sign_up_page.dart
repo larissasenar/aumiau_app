@@ -4,6 +4,7 @@ import 'package:aumiau_app/core/exceptions/senha_fraca_exception.dart';
 import 'package:aumiau_app/pages/sing_up/sign_up_controller.dart';
 import 'package:aumiau_app/widgets/app_loading.dart';
 import 'package:aumiau_app/widgets/app_logo.dart';
+import 'package:aumiau_app/widgets/toasts/toast_utils.dart';
 import 'package:flutter/material.dart';
 
 class SignUpPage extends StatefulWidget {
@@ -110,16 +111,19 @@ class _SignUpPageState extends State<SignUpPage> {
                                 });
                                 try {
                                   await _controller.criaUsuario();
+                                  Toasts.showSuccessToast(
+                                      'Cadastro salvo com sucesso!');
+                                  Navigator.of(context).pop();
                                 } on EmailInvalidoException {
-                                  print(
-                                      'Email inválido! Por favor corrija e Tente novamente');
+                                  Toasts.showWarningToast('Email inválido!');
                                 } on EmailEmUsoException {
-                                  print('Email já está em uso');
+                                  Toasts.showWarningToast(
+                                      'Email já está em uso. Escolha outro.');
                                 } on SenhaFracaException {
-                                  print(
+                                  Toasts.showWarningToast(
                                       'A senha deve ter pelo menos 6 caracteres');
                                 } on Exception {
-                                  print(
+                                  Toasts.showErrorToast(
                                       'Ocorreu um erro inesperado! Contate o suporte');
                                 } finally {
                                   setState(() {
