@@ -35,10 +35,9 @@ class SignInController {
 
       final user = UsuarioModel.fromJson(uid, userFirestore.data()!);
 
-      //para permitir o login do ADMIN
-      // if (user.tipo == 'ADMIN') {
-      //   throw AcessoNegadoException();
-      // }
+      // Atualiza o displayName no FirebaseAuth
+      await userFireAuth.user!.updateDisplayName(user.nome);
+      await userFireAuth.user!.reload();
 
       return user;
     } on FirebaseAuthException catch (e) {
