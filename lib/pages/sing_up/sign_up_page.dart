@@ -1,3 +1,6 @@
+import 'package:aumiau_app/core/exceptions/email_em_uso_exception.dart';
+import 'package:aumiau_app/core/exceptions/email_invalido_exception.dart';
+import 'package:aumiau_app/core/exceptions/senha_fraca_exception.dart';
 import 'package:aumiau_app/pages/sing_up/sign_up_controller.dart';
 import 'package:aumiau_app/widgets/app_loading.dart';
 import 'package:aumiau_app/widgets/app_logo.dart';
@@ -105,10 +108,24 @@ class _SignUpPageState extends State<SignUpPage> {
                                 setState(() {
                                   _controller.setIsLoading(true);
                                 });
-                                await _controller.criaUsuario();
-                                setState(() {
-                                  _controller.setIsLoading(false);
-                                });
+                                try {
+                                  await _controller.criaUsuario();
+                                } on EmailInvalidoException {
+                                  print(
+                                      'Email inválido! Por favor corrija e Tente novamente');
+                                } on EmailEmUsoException {
+                                  print('Email já está em uso');
+                                } on SenhaFracaException {
+                                  print(
+                                      'A senha deve ter pelo menos 6 caracteres');
+                                } on Exception {
+                                  print(
+                                      'Ocorreu um erro inesperado! Contate o suporte');
+                                } finally {
+                                  setState(() {
+                                    _controller.setIsLoading(false);
+                                  });
+                                }
                               }
                             },
                             child: const Text('Confirmar'),
