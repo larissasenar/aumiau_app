@@ -1,43 +1,59 @@
-# Flutter/Dart/Pub
+# Flutter
+**/build/
 .dart_tool/
 .flutter-plugins
 .flutter-plugins-dependencies
-.idea/
 .packages
+.pub-cache/
 .pub/
-build/
+.idea/
+.vscode/
+android/.gradle/
+android/app/*.keystore
+.flutter-plugins
+flutter_export_environment.sh
+generated_plugin_registrant.dart
+
+# Android
+*.iml
+.gradle
+/local.properties
+/.idea
+.DS_Store
+
+# iOS
+ios/Pods/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/.symlinks
+ios/Flutter/App.framework
+ios/Flutter/engine/
+ios/Flutter/Generated.xcconfig
+ios/Runner.xcworkspace/
+Podfile.lock
+
+# Web
+build/web/
+
+# Windows
+windows/Runner/GeneratedPluginRegistrant.*
+windows/build/
+
+# macOS
+macos/Runner/GeneratedPluginRegistrant.*
+macos/build/
+
+# Linux
+linux/Runner/GeneratedPluginRegistrant.*
+linux/build/
 
 # VS Code
 .vscode/
 
-# Android Studio
+# IntelliJ related
 *.iml
 .idea/
-*.ipr
-*.iws
 
-# Generated files
-*.class
+# Other
 *.log
-*.swp
-*.swo
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# Firebase
-firebase-debug.log
-
-# Android
-/local.properties
-/.gradle
-/caches
-/gradle
-
-# macOS
-*.swp
-*.swo
-
-# Flutter build directories
-/build/
+*.lock
