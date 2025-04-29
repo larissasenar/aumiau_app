@@ -1,0 +1,43 @@
+# Flutter/Dart/Pub
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.idea/
+.packages
+.pub/
+build/
+
+# VS Code
+.vscode/
+
+# Android Studio
+*.iml
+.idea/
+*.ipr
+*.iws
+
+# Generated files
+*.class
+*.log
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Firebase
+firebase-debug.log
+
+# Android
+/local.properties
+/.gradle
+/caches
+/gradle
+
+# macOS
+*.swp
+*.swo
+
+# Flutter build directories
+/build/
