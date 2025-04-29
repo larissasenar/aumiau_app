@@ -1,1 +1,37 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"aumiau-app","appId":"1:720433006794:android:15989f6094b70031dbcc33","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"aumiau-app","configurations":{"android":"1:720433006794:android:15989f6094b70031dbcc33","ios":"1:720433006794:ios:d1ae7500d7d00d29dbcc33","web":"1:720433006794:web:6b7325887c6005bedbcc33"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "aumiau-app",
+          "appId": "1:720433006794:android:15989f6094b70031dbcc33",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "aumiau-app",
+          "configurations": {
+            "android": "1:720433006794:android:15989f6094b70031dbcc33",
+            "ios": "1:720433006794:ios:d1ae7500d7d00d29dbcc33",
+            "web": "1:720433006794:web:6b7325887c6005bedbcc33"
+          }
+        }
+      }
+    }
+  },
+  "hosting": {
+    "public": "public",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}
