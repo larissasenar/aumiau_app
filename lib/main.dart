@@ -1,5 +1,5 @@
 import 'package:aumiau_app/core/theme.dart';
-import 'package:aumiau_app/pages/sign_in_page.dart';
+import 'package:aumiau_app/pages/sign_in/sign_in_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:oktoast/oktoast.dart';
