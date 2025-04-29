@@ -13,7 +13,7 @@ class SignUpController {
   final _userRef = FirebaseFirestore.instance.collection('usuarios');
 
   String? validaSenhaRepetida(String? senhaRepetida) {
-    if (senhaRepetida!.isEmpty) {
+    if (senhaRepetida == null || senhaRepetida.isEmpty) {
       return 'Campo obrigatório';
     } else if (_senha != senhaRepetida) {
       return 'As senhas devem ser iguais';
@@ -23,10 +23,18 @@ class SignUpController {
 
   Future<void> criaUsuario() async {
     try {
+      if (_email == null ||
+          _senha == null ||
+          _email!.isEmpty ||
+          _senha!.isEmpty) {
+        throw Exception('Email ou senha não foram fornecidos.');
+      }
+
       final userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
         email: _email!,
         password: _senha!,
       );
+
       await _userRef.doc(userCredential.user!.uid).set({
         'nome': _nome,
         'email': _email,

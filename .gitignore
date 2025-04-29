@@ -57,3 +57,6 @@ linux/build/
 # Other
 *.log
 *.lock
+node_modules
+
+.fake

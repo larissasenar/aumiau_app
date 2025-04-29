@@ -11,7 +11,7 @@ class SignUpPage extends StatefulWidget {
 
 class _SignUpPageState extends State<SignUpPage> {
   final _formKey = GlobalKey<FormState>();
-  final _controller = SignUpController(); //toda a lógica do controller vai aqui
+  final _controller = SignUpController();
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +37,7 @@ class _SignUpPageState extends State<SignUpPage> {
                   ),
                   validator: (nome) =>
                       nome == null || nome.isEmpty ? 'Campo obrigatório' : null,
-                  onSaved: (nome) => _controller.setNome,
+                  onSaved: (nome) => _controller.setNome(nome!),
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
@@ -51,7 +51,7 @@ class _SignUpPageState extends State<SignUpPage> {
                   validator: (email) => email == null || email.isEmpty
                       ? 'Campo obrigatório'
                       : null,
-                  onSaved: (email) => _controller.setEmail,
+                  onSaved: (email) => _controller.setEmail(email!),
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
@@ -67,7 +67,7 @@ class _SignUpPageState extends State<SignUpPage> {
                   validator: (senha) => senha == null || senha.isEmpty
                       ? 'Campo obrigatório'
                       : null,
-                  onSaved: (senha) => _controller.setSenha,
+                  onSaved: (senha) => _controller.setSenha(senha!),
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
@@ -82,6 +82,8 @@ class _SignUpPageState extends State<SignUpPage> {
                   validator: (senhaRepetida) => _controller.validaSenhaRepetida(
                     senhaRepetida,
                   ),
+                  onSaved: (senhaRepetida) =>
+                      _controller.setSenhaConfirmada(senhaRepetida!),
                 ),
                 const SizedBox(height: 16),
                 Container(
