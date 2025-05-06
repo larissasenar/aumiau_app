@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // Importe o pacote intl para formatação de datas
+import 'package:intl/intl.dart';
 
 class CarteiraVacinaPage extends StatefulWidget {
   const CarteiraVacinaPage({super.key});
@@ -17,6 +17,7 @@ class _CarteiraVacinaPageState extends State<CarteiraVacinaPage> {
   final _proximaDoseController = TextEditingController();
   final _observacoesController = TextEditingController();
   bool _isLoadingAdicionar = false;
+  bool _isLoadingExcluir = false;
 
   Future<void> _adicionarVacina() async {
     if (_formKey.currentState!.validate()) {
@@ -33,8 +34,7 @@ class _CarteiraVacinaPageState extends State<CarteiraVacinaPage> {
               ? null
               : _proximaDoseController.text,
           'observacoes': _observacoesController.text,
-          'timestamp': FieldValue
-              .serverTimestamp(), // Adiciona um timestamp para ordenação
+          'timestamp': FieldValue.serverTimestamp(),
         };
 
         try {
@@ -72,7 +72,7 @@ class _CarteiraVacinaPageState extends State<CarteiraVacinaPage> {
           .collection('usuarios')
           .doc(user.uid)
           .collection('vacinas')
-          .orderBy('timestamp', descending: true) // Ordena por data de adição
+          .orderBy('timestamp', descending: true)
           .get();
 
       return snapshot.docs
@@ -89,6 +89,10 @@ class _CarteiraVacinaPageState extends State<CarteiraVacinaPage> {
   }
 
   Future<void> _excluirVacina(String vacinaId) async {
+    setState(() {
+      _isLoadingExcluir = true;
+    });
+
     try {
       await FirebaseFirestore.instance
           .collection('usuarios')
@@ -96,7 +100,7 @@ class _CarteiraVacinaPageState extends State<CarteiraVacinaPage> {
           .collection('vacinas')
           .doc(vacinaId)
           .delete();
-      setState(() {}); // Recarrega a lista após a exclusão
+      setState(() {});
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Vacina excluída com sucesso!')),
       );
@@ -105,6 +109,10 @@ class _CarteiraVacinaPageState extends State<CarteiraVacinaPage> {
         const SnackBar(content: Text('Erro ao excluir vacina.')),
       );
     }
+
+    setState(() {
+      _isLoadingExcluir = false;
+    });
   }
 
   String _formatarData(String? data) {
@@ -112,17 +120,28 @@ class _CarteiraVacinaPageState extends State<CarteiraVacinaPage> {
       return 'Não especificada';
     }
     try {
-      final parsedDate = DateFormat('yyyy-MM-dd')
-          .parse(data); // Tente analisar como AAAA-MM-DD
+      final parsedDate = DateFormat('yyyy-MM-dd').parse(data);
       return DateFormat('dd/MM/yyyy').format(parsedDate);
     } catch (e) {
       try {
-        final parsedDate = DateFormat('dd/MM/yyyy')
-            .parse(data); // Tente analisar como DD/MM/AAAA
+        final parsedDate = DateFormat('dd/MM/yyyy').parse(data);
         return DateFormat('dd/MM/yyyy').format(parsedDate);
       } catch (e) {
-        return data; // Se não conseguir formatar, retorna a data original
+        return data;
       }
+    }
+  }
+
+  Future<void> _selecionarData(
+      BuildContext context, TextEditingController controller) async {
+    final selectedDate = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+    if (selectedDate != null) {
+      controller.text = DateFormat('dd/MM/yyyy').format(selectedDate);
     }
   }
 
@@ -159,6 +178,7 @@ class _CarteiraVacinaPageState extends State<CarteiraVacinaPage> {
                         decoration: const InputDecoration(
                             labelText: 'Data de Aplicação (DD/MM/AAAA)'),
                         keyboardType: TextInputType.datetime,
+                        onTap: () => _selecionarData(context, _dataController),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Por favor, digite a data de aplicação.';
@@ -176,6 +196,8 @@ class _CarteiraVacinaPageState extends State<CarteiraVacinaPage> {
                         decoration: const InputDecoration(
                             labelText: 'Próxima Dose (opcional, DD/MM/AAAA)'),
                         keyboardType: TextInputType.datetime,
+                        onTap: () =>
+                            _selecionarData(context, _proximaDoseController),
                         validator: (value) {
                           if (value != null && value.isNotEmpty) {
                             try {
@@ -232,7 +254,7 @@ class _CarteiraVacinaPageState extends State<CarteiraVacinaPage> {
                 }
 
                 final vacinas = snapshot.data!;
-                return ListView.builder(
+                return ListView.separated(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: vacinas.length,
@@ -268,12 +290,15 @@ class _CarteiraVacinaPageState extends State<CarteiraVacinaPage> {
                           ],
                         ),
                         trailing: IconButton(
-                          icon: const Icon(Icons.delete),
+                          icon: _isLoadingExcluir
+                              ? const CircularProgressIndicator()
+                              : const Icon(Icons.delete),
                           onPressed: () => _excluirVacina(vacina['id']),
                         ),
                       ),
                     );
                   },
+                  separatorBuilder: (context, index) => const Divider(),
                 );
               },
             ),

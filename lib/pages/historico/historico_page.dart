@@ -2,30 +2,68 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-class HistoricoPage extends StatelessWidget {
+class HistoricoPage extends StatefulWidget {
   const HistoricoPage({super.key});
+
+  @override
+  State<HistoricoPage> createState() => _HistoricoPageState();
+}
+
+class _HistoricoPageState extends State<HistoricoPage> {
+  String _statusSelecionado = 'Todos';
 
   Future<List<Map<String, dynamic>>> _carregarHistorico() async {
     final user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      final snapshot = await FirebaseFirestore.instance
-          .collection('usuarios')
-          .doc(user.uid)
-          .collection('agendamentos')
-          .get();
+    if (user == null) return [];
 
-      return snapshot.docs
-          .map((doc) => {
-                'id': doc.id,
-                'data': doc['data'],
-                'hora': doc['hora'],
-                'petNome': doc['petNome'],
-                'servico': doc['servico'],
-                'status': doc['status'],
-              })
-          .toList();
+    // Iniciando a consulta no Firestore para pegar agendamentos do usuário logado
+    Query query = FirebaseFirestore.instance
+        .collection('agendamentos')
+        .where('usuarioId', isEqualTo: user.uid);
+
+    // Adicionando o filtro de status após a ordenação
+    if (_statusSelecionado != 'Todos') {
+      print('Filtrando por status: ${_statusSelecionado.toUpperCase()}');
+      query =
+          query.where('status', isEqualTo: _statusSelecionado.toUpperCase());
     }
-    return [];
+
+    // Ordenando por 'dataHora' primeiro, pois o Firestore exige que 'orderBy' venha antes de 'where'
+    final snapshot = await query.orderBy('dataHora', descending: true).get();
+
+    // Convertendo os dados recebidos em uma lista
+    return snapshot.docs.map((doc) {
+      final dataHora = doc['dataHora'] as Timestamp?;
+      return {
+        'id': doc.id,
+        'dataHora': dataHora?.toDate(),
+        'servico': doc['servico'],
+        'status': doc['status'],
+      };
+    }).toList();
+  }
+
+  IconData _iconeDoServico(String servico) {
+    switch (servico) {
+      case 'Banho':
+        return Icons.shower;
+      case 'Tosa':
+        return Icons.content_cut;
+      case 'Consulta':
+        return Icons.medical_services;
+      case 'Vacina':
+        return Icons.vaccines;
+      default:
+        return Icons.pets;
+    }
+  }
+
+  Future<void> _atualizarStatus(String id, String novoStatus) async {
+    await FirebaseFirestore.instance
+        .collection('agendamentos')
+        .doc(id)
+        .update({'status': novoStatus});
+    setState(() {}); // Atualizando a UI após a alteração
   }
 
   @override
@@ -34,55 +72,95 @@ class HistoricoPage extends StatelessWidget {
       appBar: AppBar(title: const Text('Histórico de Agendamentos')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: FutureBuilder<List<Map<String, dynamic>>>(
-          future: _carregarHistorico(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
-
-            if (snapshot.hasError) {
-              return const Center(child: Text('Erro ao carregar histórico.'));
-            }
-
-            if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return const Center(child: Text('Nenhum agendamento realizado.'));
-            }
-
-            final agendamentos = snapshot.data!;
-            return ListView.builder(
-              itemCount: agendamentos.length,
-              itemBuilder: (context, index) {
-                final agendamento = agendamentos[index];
-                return Card(
-                  margin: const EdgeInsets.symmetric(vertical: 8),
-                  child: ListTile(
-                    title: Text(
-                        '${agendamento['petNome']} - ${agendamento['servico']}'),
-                    subtitle: Text(
-                      'Data: ${agendamento['data']} \nHora: ${agendamento['hora']} \nStatus: ${agendamento['status']}',
-                    ),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.delete),
-                      onPressed: () async {
-                        await FirebaseFirestore.instance
-                            .collection('usuarios')
-                            .doc(FirebaseAuth.instance.currentUser!.uid)
-                            .collection('agendamentos')
-                            .doc(agendamento['id'])
-                            .delete();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content:
-                                  Text('Agendamento excluído com sucesso!')),
-                        );
-                      },
-                    ),
-                  ),
-                );
+        child: Column(
+          children: [
+            // Dropdown para seleção do status
+            DropdownButton<String>(
+              value: _statusSelecionado,
+              isExpanded: true,
+              items: ['Todos', 'PENDENTE', 'CONCLUIDO', 'CANCELADO']
+                  .map((status) => DropdownMenuItem(
+                        value: status,
+                        child: Text(status),
+                      ))
+                  .toList(),
+              onChanged: (value) {
+                setState(() {
+                  _statusSelecionado = value!;
+                });
               },
-            );
-          },
+            ),
+            const SizedBox(height: 16),
+            Expanded(
+              child: FutureBuilder<List<Map<String, dynamic>>>(
+                future: _carregarHistorico(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  if (snapshot.hasError) {
+                    return const Center(
+                        child: Text('Erro ao carregar histórico.'));
+                  }
+
+                  if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Center(
+                        child: Text('Nenhum agendamento encontrado.'));
+                  }
+
+                  final agendamentos = snapshot.data!;
+                  return ListView.builder(
+                    itemCount: agendamentos.length,
+                    itemBuilder: (context, index) {
+                      final agendamento = agendamentos[index];
+                      final dataHora = agendamento['dataHora'] as DateTime?;
+                      final dataFormatada = dataHora != null
+                          ? '${dataHora.day.toString().padLeft(2, '0')}/${dataHora.month.toString().padLeft(2, '0')}/${dataHora.year} - ${dataHora.hour.toString().padLeft(2, '0')}:${dataHora.minute.toString().padLeft(2, '0')}'
+                          : 'Data desconhecida';
+
+                      return Card(
+                        margin: const EdgeInsets.symmetric(vertical: 8),
+                        child: ListTile(
+                          leading: Icon(
+                            _iconeDoServico(agendamento['servico']),
+                            color: Colors.blue,
+                          ),
+                          title: Text('Serviço: ${agendamento['servico']}'),
+                          subtitle: Text(
+                            'Data e hora: $dataFormatada\nStatus: ${agendamento['status']}',
+                          ),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.check,
+                                    color: Colors.green),
+                                tooltip: 'Marcar como concluído',
+                                onPressed: () {
+                                  _atualizarStatus(
+                                      agendamento['id'], 'CONCLUIDO');
+                                },
+                              ),
+                              IconButton(
+                                icon:
+                                    const Icon(Icons.cancel, color: Colors.red),
+                                tooltip: 'Cancelar agendamento',
+                                onPressed: () {
+                                  _atualizarStatus(
+                                      agendamento['id'], 'CANCELADO');
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );

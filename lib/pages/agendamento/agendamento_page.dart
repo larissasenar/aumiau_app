@@ -107,13 +107,18 @@ class _AgendamentoPageState extends State<AgendamentoPage> {
                         labelText: 'Serviço',
                         prefixIcon: Icon(Icons.pets),
                       ),
+                      value: _servicoSelecionado,
                       items: _servicos
                           .map((servico) => DropdownMenuItem(
                                 value: servico,
                                 child: Text(servico),
                               ))
                           .toList(),
-                      onChanged: (value) => _servicoSelecionado = value,
+                      onChanged: (value) {
+                        setState(() {
+                          _servicoSelecionado = value;
+                        });
+                      },
                       validator: (value) =>
                           value == null ? 'Selecione um serviço' : null,
                     ),
