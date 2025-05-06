@@ -16,23 +16,16 @@ class _HistoricoPageState extends State<HistoricoPage> {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return [];
 
-    // Iniciando a consulta no Firestore para pegar agendamentos do usuário logado
-    Query query = FirebaseFirestore.instance
+    // Carrega todos os agendamentos e aplica filtro de status localmente
+    final snapshot = await FirebaseFirestore.instance
+        .collection('usuarios')
+        .doc(user.uid)
         .collection('agendamentos')
-        .where('usuarioId', isEqualTo: user.uid);
+        .orderBy('dataHora', descending: true)
+        .get(const GetOptions(
+            source: Source.server)); // Forçando consulta ao servidor
 
-    // Adicionando o filtro de status após a ordenação
-    if (_statusSelecionado != 'Todos') {
-      print('Filtrando por status: ${_statusSelecionado.toUpperCase()}');
-      query =
-          query.where('status', isEqualTo: _statusSelecionado.toUpperCase());
-    }
-
-    // Ordenando por 'dataHora' primeiro, pois o Firestore exige que 'orderBy' venha antes de 'where'
-    final snapshot = await query.orderBy('dataHora', descending: true).get();
-
-    // Convertendo os dados recebidos em uma lista
-    return snapshot.docs.map((doc) {
+    final dados = snapshot.docs.map((doc) {
       final dataHora = doc['dataHora'] as Timestamp?;
       return {
         'id': doc.id,
@@ -41,6 +34,14 @@ class _HistoricoPageState extends State<HistoricoPage> {
         'status': doc['status'],
       };
     }).toList();
+
+    if (_statusSelecionado != 'Todos') {
+      return dados
+          .where((item) => item['status'] == _statusSelecionado.toUpperCase())
+          .toList();
+    }
+
+    return dados;
   }
 
   IconData _iconeDoServico(String servico) {
@@ -59,11 +60,17 @@ class _HistoricoPageState extends State<HistoricoPage> {
   }
 
   Future<void> _atualizarStatus(String id, String novoStatus) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
     await FirebaseFirestore.instance
+        .collection('usuarios')
+        .doc(user.uid)
         .collection('agendamentos')
         .doc(id)
         .update({'status': novoStatus});
-    setState(() {}); // Atualizando a UI após a alteração
+
+    setState(() {}); // Atualiza a UI
   }
 
   @override
@@ -74,7 +81,7 @@ class _HistoricoPageState extends State<HistoricoPage> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // Dropdown para seleção do status
+            // Dropdown de status
             DropdownButton<String>(
               value: _statusSelecionado,
               isExpanded: true,

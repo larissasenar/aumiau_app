@@ -14,9 +14,36 @@ class _AgendamentoPageState extends State<AgendamentoPage> {
   DateTime? _dataSelecionada;
   TimeOfDay? _horaSelecionada;
   String? _servicoSelecionado;
+  String? _petSelecionado;
   bool _isLoading = false;
 
   final List<String> _servicos = ['Banho', 'Tosa', 'Consulta', 'Vacina'];
+  List<String> _pets = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _carregarPets();
+  }
+
+  Future<void> _carregarPets() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final snapshot = await FirebaseFirestore.instance
+        .collection('pets')
+        .where('uidDono', isEqualTo: user.uid)
+        .get();
+
+    setState(() {
+      _pets = snapshot.docs
+          .map((doc) => doc['nome'] as String)
+          .toSet() // Remove duplicatas
+          .toList();
+      // Se houver pets, define o primeiro como selecionado por padrão
+      _petSelecionado = _pets.isNotEmpty ? _pets[0] : null;
+    });
+  }
 
   Future<void> _selecionarData() async {
     final data = await showDatePicker(
@@ -47,7 +74,8 @@ class _AgendamentoPageState extends State<AgendamentoPage> {
   Future<void> _salvarAgendamento() async {
     if (!_formKey.currentState!.validate() ||
         _dataSelecionada == null ||
-        _horaSelecionada == null) {
+        _horaSelecionada == null ||
+        _petSelecionado == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Preencha todos os campos obrigatórios.')),
       );
@@ -68,11 +96,17 @@ class _AgendamentoPageState extends State<AgendamentoPage> {
         _horaSelecionada!.minute,
       );
 
-      await FirebaseFirestore.instance.collection('agendamentos').add({
+      // 🔄 Correção: salvar na subcoleção correta
+      await FirebaseFirestore.instance
+          .collection('usuarios')
+          .doc(user.uid)
+          .collection('agendamentos')
+          .add({
         'usuarioId': user.uid,
         'nomeUsuario': user.displayName ?? '',
         'dataHora': dataHora,
         'servico': _servicoSelecionado,
+        'pet': _petSelecionado,
         'status': 'PENDENTE',
         'criadoEm': FieldValue.serverTimestamp(),
       });
@@ -102,6 +136,33 @@ class _AgendamentoPageState extends State<AgendamentoPage> {
                 key: _formKey,
                 child: ListView(
                   children: [
+                    // Campo de seleção do Pet
+                    if (_pets.isEmpty)
+                      const Center(child: Text('Nenhum pet cadastrado.'))
+                    else
+                      DropdownButtonFormField<String>(
+                        decoration: const InputDecoration(
+                          labelText: 'Selecione o Pet',
+                          prefixIcon: Icon(Icons.pets),
+                        ),
+                        value: _petSelecionado,
+                        items: _pets
+                            .map((pet) => DropdownMenuItem(
+                                  value: pet,
+                                  child: Text(pet),
+                                ))
+                            .toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            _petSelecionado = value;
+                          });
+                        },
+                        validator: (value) =>
+                            value == null ? 'Selecione um pet' : null,
+                      ),
+                    const SizedBox(height: 16),
+
+                    // Campo de seleção do serviço
                     DropdownButtonFormField<String>(
                       decoration: const InputDecoration(
                         labelText: 'Serviço',
@@ -123,6 +184,8 @@ class _AgendamentoPageState extends State<AgendamentoPage> {
                           value == null ? 'Selecione um serviço' : null,
                     ),
                     const SizedBox(height: 16),
+
+                    // Campo de seleção de data
                     ListTile(
                       title: Text(_dataSelecionada == null
                           ? 'Selecione uma data'
@@ -130,6 +193,7 @@ class _AgendamentoPageState extends State<AgendamentoPage> {
                       trailing: const Icon(Icons.calendar_today),
                       onTap: _selecionarData,
                     ),
+                    // Campo de seleção de hora
                     ListTile(
                       title: Text(_horaSelecionada == null
                           ? 'Selecione um horário'
@@ -138,6 +202,7 @@ class _AgendamentoPageState extends State<AgendamentoPage> {
                       onTap: _selecionarHora,
                     ),
                     const SizedBox(height: 32),
+                    // Botão para salvar o agendamento
                     ElevatedButton(
                       onPressed: _salvarAgendamento,
                       child: const Text('Agendar'),
