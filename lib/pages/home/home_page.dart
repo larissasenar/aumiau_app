@@ -1,3 +1,4 @@
+import 'package:aumiau_app/pages/servico/servicos_page.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:aumiau_app/pages/agendamento/agendamento_page.dart';
@@ -69,6 +70,10 @@ class _HomePageState extends State<HomePage> {
               Navigator.push(context,
                   MaterialPageRoute(builder: (_) => const CadastroPetPage()));
             }),
+            _drawerItem(Icons.calendar_today, 'Serviços', () {
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const ServicosPage()));
+            }),
             _drawerItem(Icons.calendar_today, 'Agendamento', () {
               Navigator.push(context,
                   MaterialPageRoute(builder: (_) => const AgendamentoPage()));
@@ -118,6 +123,15 @@ class _HomePageState extends State<HomePage> {
                 crossAxisSpacing: 16,
                 childAspectRatio: 1,
                 children: [
+                  _quickAccessTile(
+                    context,
+                    icon: Icons.calendar_today,
+                    label: 'Serviços',
+                    onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const ServicosPage())),
+                  ),
                   _quickAccessTile(
                     context,
                     icon: Icons.calendar_today,
