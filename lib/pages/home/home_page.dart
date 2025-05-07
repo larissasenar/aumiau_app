@@ -70,7 +70,7 @@ class _HomePageState extends State<HomePage> {
               Navigator.push(context,
                   MaterialPageRoute(builder: (_) => const CadastroPetPage()));
             }),
-            _drawerItem(Icons.calendar_today, 'Serviços', () {
+            _drawerItem(Icons.pets, 'Serviços', () {
               Navigator.push(context,
                   MaterialPageRoute(builder: (_) => const ServicosPage()));
             }),
@@ -125,7 +125,7 @@ class _HomePageState extends State<HomePage> {
                 children: [
                   _quickAccessTile(
                     context,
-                    icon: Icons.calendar_today,
+                    icon: Icons.pets,
                     label: 'Serviços',
                     onTap: () => Navigator.push(
                         context,

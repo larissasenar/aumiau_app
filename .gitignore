@@ -64,3 +64,4 @@ linux/build/
 node_modules
 
 .fake
+.env
