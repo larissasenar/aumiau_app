@@ -19,113 +19,67 @@ class _SignInPageState extends State<SignInPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Form(
-        key: _formKey,
-        child: Container(
-          child: _controller.isLoading
-              ? Center(
-                  child: AppLoading(),
-                )
-              : Padding(
-                  padding: const EdgeInsets.all(32),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const AppLogo(),
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        decoration: const InputDecoration(
-                          labelText: 'Email',
-                          prefixIcon: Icon(
-                            Icons.email,
-                            size: 24,
-                          ),
-                        ),
-                        validator: (email) => email == null || email.isEmpty
-                            ? 'Campo obrigatório'
-                            : null,
-                        onSaved: (email) => _controller.setEmail(email!),
-                      ),
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        decoration: const InputDecoration(
-                          labelText: 'Senha',
-                          prefixIcon: Icon(
-                            Icons.lock,
-                            size: 24,
-                          ),
-                        ),
-                        obscureText: true,
-                        validator: (senha) => senha == null || senha.isEmpty
-                            ? 'Campo obrigatório'
-                            : null,
-                        onSaved: (senha) => _controller.setSenha(senha!),
-                      ),
-                      const SizedBox(height: 16),
-                      SizedBox(
-                        width: 120,
-                        child: OutlinedButton(
-                          onPressed: () async {
-                            final form = _formKey.currentState;
-                            if (form != null && form.validate()) {
-                              form.save();
-                              setState(() => _controller.setIsLoading(true));
-
-                              try {
-                                final user = await _controller.fazLogin();
-                                print("Login realizado com sucesso.");
-                                print("ID do usuário: ${user.id}");
-                                print("Nome do usuário: ${user.nome}");
-                                Navigator.of(context)
-                                    .pushReplacementNamed('/home');
-                              } on AcessoNegadoException catch (e) {
-                                // Exibindo a mensagem de erro específica para Acesso Negado
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text(e.message)),
-                                );
-                              } on AuthException catch (e) {
-                                // Exibindo a mensagem de erro para outras exceções
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text(e.message)),
-                                );
-                              } catch (e) {
-                                // Tratamento de erro genérico
-                                print('Erro inesperado: $e');
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                      content: Text('Erro inesperado')),
-                                );
-                              } finally {
-                                setState(() => _controller.setIsLoading(false));
-                              }
-                            }
-                          },
-                          child: _controller.isLoading
-                              ? const CircularProgressIndicator()
-                              : const Text('Entrar'),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      SizedBox(
-                        width: 120,
-                        child: OutlinedButton(
-                          onPressed: _controller.isLoading
-                              ? null
-                              : () {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (_) => const SignUpPage(),
-                                    ),
-                                  );
-                                },
-                          child: const Text('Cadastrar'),
-                        ),
-                      ),
-                    ],
-                  ),
+        body: Form(
+      key: _formKey,
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const SizedBox(height: 80),
+              const AppLogo(),
+              const SizedBox(height: 24),
+              TextFormField(
+                decoration: const InputDecoration(
+                  labelText: 'Email',
+                  prefixIcon: Icon(Icons.email),
                 ),
+                validator: (email) =>
+                    email == null || email.isEmpty ? 'Campo obrigatório' : null,
+                onSaved: (email) => _controller.setEmail(email!),
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                decoration: const InputDecoration(
+                  labelText: 'Senha',
+                  prefixIcon: Icon(Icons.lock),
+                ),
+                obscureText: true,
+                validator: (senha) =>
+                    senha == null || senha.isEmpty ? 'Campo obrigatório' : null,
+                onSaved: (senha) => _controller.setSenha(senha!),
+              ),
+              const SizedBox(height: 24),
+              _controller.isLoading
+                  ? const CircularProgressIndicator()
+                  : Column(
+                      children: [
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton(
+                            onPressed: loginFunction,
+                            child: const Text('Entrar'),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton(
+                            onPressed: () {
+                              Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (_) => const SignUpPage()));
+                            },
+                            child: const Text('Cadastrar'),
+                          ),
+                        ),
+                      ],
+                    ),
+            ],
+          ),
         ),
       ),
-    );
+    ));
   }
 }
