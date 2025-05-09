@@ -34,12 +34,12 @@ class _RelatorioPageState extends State<RelatorioPage> {
     final isAdmin = user.email == 'admin@aumiau.com';
 
     try {
-      int agendamentosCount = 0;
-      int vacinasCount = 0;
-
       if (isAdmin) {
         final usuariosSnapshot =
             await FirebaseFirestore.instance.collection('usuarios').get();
+
+        int agendamentosCount = 0;
+        int vacinasCount = 0;
 
         for (var doc in usuariosSnapshot.docs) {
           final uid = doc.id;
@@ -70,6 +70,7 @@ class _RelatorioPageState extends State<RelatorioPage> {
           isLoading = false;
         });
       } else {
+        // Usuário normal vê apenas os próprios dados
         final agendamentosSnapshot = await FirebaseFirestore.instance
             .collection('usuarios')
             .doc(user.uid)
@@ -96,10 +97,7 @@ class _RelatorioPageState extends State<RelatorioPage> {
         });
       }
     } catch (e) {
-      setState(() {
-        isLoading = false;
-      });
-
+      setState(() => isLoading = false);
       print('Erro ao carregar dados: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erro ao carregar os dados: $e')),
@@ -139,8 +137,7 @@ class _RelatorioPageState extends State<RelatorioPage> {
         trailing: Text('$total', style: const TextStyle(fontSize: 18)),
         onTap: () {
           Navigator.pushNamed(context, '/relatorio_detalhe',
-              arguments:
-                  title.toLowerCase()); // "agendamentos", "vacinas", etc.
+              arguments: title.toLowerCase());
         },
       ),
     );

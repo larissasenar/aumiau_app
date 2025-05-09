@@ -16,14 +16,12 @@ class _HistoricoPageState extends State<HistoricoPage> {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return [];
 
-    // Carrega todos os agendamentos e aplica filtro de status localmente
     final snapshot = await FirebaseFirestore.instance
         .collection('usuarios')
         .doc(user.uid)
         .collection('agendamentos')
         .orderBy('dataHora', descending: true)
-        .get(const GetOptions(
-            source: Source.server)); // Forçando consulta ao servidor
+        .get(const GetOptions(source: Source.server));
 
     final dados = snapshot.docs.map((doc) {
       final dataHora = doc['dataHora'] as Timestamp?;
@@ -70,7 +68,7 @@ class _HistoricoPageState extends State<HistoricoPage> {
         .doc(id)
         .update({'status': novoStatus});
 
-    setState(() {}); // Atualiza a UI
+    setState(() {});
   }
 
   @override
@@ -81,7 +79,6 @@ class _HistoricoPageState extends State<HistoricoPage> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // Dropdown de status
             DropdownButton<String>(
               value: _statusSelecionado,
               isExpanded: true,
