@@ -35,7 +35,6 @@ class SignInController {
 
       final user = UsuarioModel.fromJson(uid, userFirestore.data()!);
 
-      // Atualiza o displayName no FirebaseAuth
       await userFireAuth.user!.updateDisplayName(user.nome);
       await userFireAuth.user!.reload();
 

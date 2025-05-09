@@ -82,17 +82,14 @@ class _SignInPageState extends State<SignInPage> {
                                 Navigator.of(context)
                                     .pushReplacementNamed('/home');
                               } on AcessoNegadoException catch (e) {
-                                // Exibindo a mensagem de erro específica para Acesso Negado
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(content: Text(e.message)),
                                 );
                               } on AuthException catch (e) {
-                                // Exibindo a mensagem de erro para outras exceções
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(content: Text(e.message)),
                                 );
                               } catch (e) {
-                                // Tratamento de erro genérico
                                 print('Erro inesperado: $e');
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(

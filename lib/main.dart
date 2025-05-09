@@ -1,5 +1,6 @@
 import 'package:aumiau_app/core/theme.dart';
 import 'package:aumiau_app/pages/home/home_page.dart';
+import 'package:aumiau_app/pages/relatorio/relatorio_view_page.dart';
 import 'package:aumiau_app/pages/sign_in/sign_in_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -11,7 +12,7 @@ void main() async {
   try {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
-    ); // Inicializa o Firebase
+    );
   } catch (e) {
     print("Erro ao inicializar o Firebase: $e");
   }
@@ -25,15 +26,20 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return OKToast(
-        child: MaterialApp(
-      title: 'Aumiau App',
-      debugShowCheckedModeBanner: false,
-      theme: theme,
-      initialRoute: '/',
-      routes: {
-        '/': (context) => const SignInPage(),
-        '/home': (context) => const HomePage(),
-      },
-    ));
+      child: MaterialApp(
+        title: 'Aumiau App',
+        debugShowCheckedModeBanner: false,
+        theme: theme,
+        initialRoute: '/',
+        routes: {
+          '/': (context) => const SignInPage(),
+          '/home': (context) => const HomePage(),
+          '/relatorio_detalhe': (context) {
+            final tipo = ModalRoute.of(context)!.settings.arguments as String;
+            return RelatorioViewPage(tipo: tipo);
+          },
+        },
+      ),
+    );
   }
 }
