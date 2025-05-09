@@ -10,7 +10,7 @@ class AppLogo extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.only(bottom: 40 / 3.5),
           child: Text(
-            'AuMiau App',
+            'AuMiau',
             style: TextStyle(
               fontSize: 40,
               fontWeight: FontWeight.bold,
@@ -22,7 +22,7 @@ class AppLogo extends StatelessWidget {
           bottom: 0,
           right: 0,
           child: Text(
-            'admin',
+            'app',
             style: TextStyle(
               fontSize: 40 / 2.5,
               fontWeight: FontWeight.bold,
